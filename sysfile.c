@@ -7,6 +7,13 @@
 
 
 
+// For Config data's
+
+typedef struct 
+{
+    char telegram_token[128];
+    char chat_id[64];
+} Config;
 
 // For Telegram Bot
 void tele_msg(const char *message){}
