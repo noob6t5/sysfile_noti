@@ -5,6 +5,7 @@
 #include <sys/inotify.h>
 #include <fcntl.h>
 #include <curl/curl.h>
+
 #define EVENT_SIZE (sizeof(struct inotify_event))
 #define EVENT_BUF_LEN (1024 * (EVENT_SIZE + 16))
 // For Config data's
@@ -50,8 +51,34 @@ int config_data(const char *filename, Config *config)
         return 0;
     }
 }
-// For Telegram Bot
-void tele_msg(const char *message) {}
+// For Telegram Bot.......
+
+int tele_msg(const char *message,const Config *config) {
+    CURL *curl;
+    CURLcode res; //return code
+    char url[256];
+    snprintf(url, sizeof(url), "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s", config->telegram_token, config->chat_id, message);
+
+    curl = curl_easy_init();
+    if(!curl){
+        perror("CURL ain't working ");
+        return -1;
+    }
+
+    // http req
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+    res = curl_easy_perform(curl);
+
+    if (res != CURLE_OK)
+    {
+        fprintf(stderr, "CURL error: %s\n", curl_easy_strerror(res));
+        curl_easy_cleanup(curl);
+        return -1;
+    }
+    curl_easy_cleanup(curl);
+    return 0;
+}
 
 // Main Fucntion
 int main(void)
