@@ -37,11 +37,9 @@ int config_data(const char *filename, Config *config)
     char line[256];
     while (fgets(line, sizeof(line), file))
     {
-        if (line[0] == '#' || line[0] == ';' || line[0] == '\n')
-            continue;
-        if (strncmp(line, "token=", 6) == 0)
+        if (strncmp(line, "telegram_token=", 15) == 0)
         {
-            strncpy(config->telegram_token, line + 6, sizeof(config->telegram_token) - 1);
+            strncpy(config->telegram_token, line + 15, sizeof(config->telegram_token) - 1);
             config->telegram_token[strcspn(config->telegram_token, "\n")] = '\0';
         }
         else if (strncmp(line, "chat_id=", 8) == 0)
@@ -79,8 +77,6 @@ int tele_msg(const char *message, const Config *config)
 
     snprintf(url, sizeof(url), "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s",
              config->telegram_token, config->chat_id, encoded_message);
-
-    //
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
     res = curl_easy_perform(curl);
@@ -102,11 +98,20 @@ int tele_msg(const char *message, const Config *config)
 Event's Handling delete,update,move,create:
  https://man7.org/linux/man-pages/man7/inotify.7.html
 */
-void event_handle(const struct inotify_event *event,const Config *config){
-    if (event->len==0)
-    return;
+void event_handle(const struct inotify_event *event, const Config *config)
+{
+    if (event->len == 0)
+        return;
+
+    // Ignore hidden files starting with '.'
+    if (event->name[0] == '.')
+        return;
+
     char message[256] = {0};
-    if(event->mask&IN_CREATE){
+
+    // Handle events
+    if (event->mask & IN_CREATE)
+    {
         snprintf(message, sizeof(message), "New File created: %s", event->name);
     }
     else if (event->mask & IN_DELETE)
@@ -126,13 +131,13 @@ void event_handle(const struct inotify_event *event,const Config *config){
         snprintf(message, sizeof(message), "File moved from: %s", event->name);
     }
 
-if (strlen(message) > 0)
-{
-    if (tele_msg(message, config) != 0)
+    if (strlen(message) > 0)
     {
-        fprintf(stderr, "Error: Failed to send message for event on file: %s\n", event->name);
+        if (tele_msg(message, config) != 0)
+        {
+            fprintf(stderr, "Error: Failed to send message for event on file: %s\n", event->name);
+        }
     }
-}
 }
 
 // Main Fucntion
@@ -144,8 +149,8 @@ int main()
         fprintf(stderr, "Error: Failed to load config.\n");
         return EXIT_FAILURE;
     }
-
-    const char *path = "/home/rishi";
+// This is only the demo code that i am using to monitor my infrastructure. 
+    const char *path = "/home/randomuser";
     if (config_data("config.ini", &config) != 0)
     {
         fprintf(stderr, "Error: Failed to load configuration. Exiting.\n");
@@ -185,7 +190,6 @@ while (1)
 
 inotify_rm_watch(fd, wd);
 close(fd);
-
 return EXIT_SUCCESS;
-printf("Everything fine :)\n");
+
 }
