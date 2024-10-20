@@ -31,8 +31,8 @@ int config_data(const char *filename, Config *config)
     FILE *file = fopen(filename, "r");
     if (!file)
     {
-        perror("Error opening Config File"); // fprintf not necessary 
-        return -1;         // error 
+        perror("Error opening Config File");
+        return -1;
     }
     char line[256];
     while (fgets(line, sizeof(line), file))
@@ -49,23 +49,38 @@ int config_data(const char *filename, Config *config)
             strncpy(config->chat_id, line + 8, sizeof(config->chat_id) - 1);
             config->chat_id[strcspn(config->chat_id, "\n")] = '\0';
         }
-        fclose(file);
-        return 0;
     }
+    fclose(file); // Close the file outside the loop
+    return 0;
 }
+
 // For Telegram Bot.......
-int tele_msg(const char *message,const Config *config) {
+int tele_msg(const char *message, const Config *config)
+{
     CURL *curl;
-    CURLcode res; //return code
+    CURLcode res; // return code
     char url[256];
-    snprintf(url, sizeof(url), "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s", config->telegram_token, config->chat_id, message);
 
     curl = curl_easy_init();
-    if(!curl){
-        perror("CURL ain't working ");
+    if (!curl)
+    {
+        perror("CURL initialization failed");
         return -1;
     }
-    // http req
+
+    // URL encode the message
+    char *encoded_message = curl_easy_escape(curl, message, 0);
+    if (!encoded_message)
+    {
+        perror("Error encoding the message");
+        curl_easy_cleanup(curl);
+        return -1;
+    }
+
+    snprintf(url, sizeof(url), "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s",
+             config->telegram_token, config->chat_id, encoded_message);
+
+    //
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
     res = curl_easy_perform(curl);
@@ -74,17 +89,21 @@ int tele_msg(const char *message,const Config *config) {
     {
         fprintf(stderr, "CURL error: %s\n", curl_easy_strerror(res));
         curl_easy_cleanup(curl);
+        curl_free(encoded_message); // Free the encoded message
         return -1;
     }
+
     curl_easy_cleanup(curl);
+    curl_free(encoded_message); // Free the encoded message
     return 0;
 }
+
 /*
 Event's Handling delete,update,move,create:
  https://man7.org/linux/man-pages/man7/inotify.7.html
 */
 void event_handle(const struct inotify_event *event,const Config *config){
-    if (event->len=0)
+    if (event->len==0)
     return;
     char message[256] = {0};
     if(event->mask&IN_CREATE){
@@ -109,7 +128,7 @@ void event_handle(const struct inotify_event *event,const Config *config){
 
 if (strlen(message) > 0)
 {
-    if (send_message(message, config) != 0)
+    if (tele_msg(message, config) != 0)
     {
         fprintf(stderr, "Error: Failed to send message for event on file: %s\n", event->name);
     }
@@ -117,16 +136,17 @@ if (strlen(message) > 0)
 }
 
 // Main Fucntion
-int main(void)
+int main()
 {
     Config config;
-    if (read_config("config.ini", &config) != 0)
+    if (config_data("config.ini", &config) != 0)
     {
         fprintf(stderr, "Error: Failed to load config.\n");
         return EXIT_FAILURE;
     }
 
-    const char *path = "/usr/bin/home" if (read_config("config.ini", &config) != 0)
+    const char *path = "/home/rishi";
+    if (config_data("config.ini", &config) != 0)
     {
         fprintf(stderr, "Error: Failed to load configuration. Exiting.\n");
         return EXIT_FAILURE;
@@ -158,7 +178,7 @@ while (1)
     for (int i = 0; i < length;)
     {
         struct inotify_event *event = (struct inotify_event *)&buffer[i];
-        handle_event(event, &config);
+        event_handle(event, &config);
         i += EVENT_SIZE + event->len;
     }
 }
