@@ -11,6 +11,9 @@
   - **File modified: data.log**
   - **File deleted: old_file.txt**
   - **File moved to: new_location.txt**
+![changes](https://github.com/user-attachments/assets/6fac4f8a-21e7-4015-85ec-3e2dd81bb0c1)
+
+
 
 ## **Usage & Compilation**
 
@@ -45,7 +48,7 @@
      ./notify
      ```
 
-## **To-Do**
+## **Add more features to suit your infrastructure**
 - Add functionality to monitor all directories in the Linux filesystem.
 - Enable auto-run when the system starts.
 - Integrate shell scripts for user interaction before execution.
