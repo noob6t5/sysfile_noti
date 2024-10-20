@@ -1,34 +1,51 @@
-# sysfile_noti
-A tool in C and inline asm to get notified about file changes in Linux system directly via telegram bot using  `inotify` API to monitor a directory.
+# **sysfile_noti**
 
-# Features
-- Monitors file creation, deletion, modification, and movements in a specified directory  .
+`sysfile_noti` is a tool written in C with inline assembly to monitor file changes on a Linux system and notify you through a Telegram bot. It leverages the `inotify` API to track file events such as creation, modification, deletion, and movement within a specified directory.
+
+## **Features**
+- Monitors file creation, deletion, modification, and movements in a specified directory.
 - Sends real-time notifications to a Telegram bot.
 - Configurable via a simple `config.ini` file.
-- Get Notified like this:
-  
- **File created: example.txt**
- 
- **File modified: data.log**
+-  notifications you will get in Bot :
+  - **File created: example.txt**
+  - **File modified: data.log**
+  - **File deleted: old_file.txt**
+  - **File moved to: new_location.txt**
 
- **File deleted: old_file.txt**
-  
- **File moved to: new_location.txt**
+## **Usage & Compilation**
 
+1. **Configuration**:
+   - Create a `config.ini` file with your Telegram bot token and chat ID:
+     ```ini
+     token=<your-telegram-token>
+     chat_id=<your-chat-id>
+     ```
 
-#  Usuage & Compile 
+2. **Specify Directory**:
+   - Update the `path` in the source code to define the directory you want to monitor:
+     ```c
+     const char *path = "/home/user";
+     ```
 
-  Keep your token and chat_id in `config.ini`
-  
-**telegram-token=  here**
+3. **Dependencies**:
+   - Install `libcurl` to handle HTTP requests:
+     ```bash
+     sudo apt-get install libcurl4-openssl-dev
+     ```
 
-**chat_id=  here**
+4. **Compilation**:
+   - Compile the program using `gcc` with the `-lcurl` flag:
+     ```bash
+     gcc -o notify notify.c -lcurl
+     ```
 
- Specify directory to monitor . **const char *path = "/home/user";** 
+5. **Run**:
+   - Start monitoring the specified directory:
+     ```bash
+     ./notify
+     ```
 
-lcurl is needed to compile it ..`gcc -o notify notify.c -lcurl`
-
-#  Todo
-- Integrating the with other montioring tool for monitoring all linux directory.
-- Including auto run's when the system is `on`
-- Implemting with shell's to ask user to run ..
+## **To-Do**
+- Add functionality to monitor all directories in the Linux filesystem.
+- Enable auto-run when the system starts.
+- Integrate shell scripts for user interaction before execution.
