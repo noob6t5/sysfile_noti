@@ -1,5 +1,15 @@
 # **sysfile_noti**
 
+    
+
+  <div style="text-align: center;">
+    <img src="https://github.com/user-attachments/assets/8f2d2d0d-72ba-4821-be6c-f8f14e184f70" alt="sys" style="border-radius: 50%; width: 200px; height: 200px;" />
+</div>
+
+
+
+
+
 `sysfile_noti` is a tool written in C  to monitor file changes on a Linux system and notify you through a Telegram bot. It leverages the `inotify` API to track file events such as creation, modification, deletion, and movement within a specified directory. It might help you to get started in developing more sophiscated and with more feature's for your client, company that you are working in ...
 This is just a **Sample Code** to get you help started ..........
 
